@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GroundProbe — Support Operations | OPEX MBR & KPI</title>
+<style>
+  :root {
+    --navy: #003366; --cyan: #0099CC; --navy-text-soft: #b3d4f0;
+    --grey-card: #D9D9D9; --grey-border: #b3b3b3; --grey-text: #444441;
+    --good: #10b981; --good-soft: #6ee7b7; --good-bg: #d1fae5; --good-fg: #065f46;
+    --warn: #f59e0b; --warn-soft: #fcd34d; --warn-bg: #fef3c7; --warn-fg: #92400e;
+    --bad:  #ef4444; --bad-soft: #fca5a5; --bad-bg: #fee2e2; --bad-fg: #991b1b;
+    --radius-md: 8px; --radius-lg: 12px;
+    --font-sans: 'Segoe UI', Tahoma, Verdana, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: #F4F6F9; color: #1F2A37; }
+  .app-header { background: var(--navy); color: #fff; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .app-header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.4px; }
+  .app-header .meta { font-size: 11px; color: var(--navy-text-soft); text-align: right; }
+  nav.tabs { background: #fff; border-bottom: 2px solid var(--cyan); padding: 0 16px; display: flex; gap: 2px; }
+  nav.tabs button { background: transparent; border: none; padding: 12px 20px; font-size: 13px; font-weight: 600; color: var(--grey-text); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  nav.tabs button:hover { color: var(--navy); }
+  nav.tabs button.active { color: var(--navy); border-bottom-color: var(--cyan); }
+  nav.tabs button .badge { font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 6px; font-weight: 700; background: var(--cyan); color: #fff; }
+  nav.tabs button.placeholder .badge { background: #999; }
+  main { padding: 16px 20px 32px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .dash { font-family: var(--font-sans); padding: 0; }
+  .header { background: var(--navy); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .header-title { color: #fff; font-size: 20px; font-weight: 700; margin: 0; }
+  .header-sub   { color: var(--navy-text-soft); font-size: 12px; margin: 2px 0 0; }
+  .header-badge { background: var(--cyan); color: #fff; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+  .filter-section { margin-bottom: 14px; }
+  .filter-group-label { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--navy); margin: 0 0 5px; }
+  .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .filter-btn { font-size: 11px; padding: 4px 12px; border: 1.5px solid var(--navy); border-radius: 20px; background: transparent; color: var(--navy); font-weight: 500; cursor: pointer; }
+  .filter-btn.active { background: var(--navy); color: #fff; }
+  .filter-btn.fts { border-color: var(--cyan); color: var(--cyan); }
+  .filter-btn.fts.active { background: var(--cyan); color: #fff; border-color: var(--cyan); }
+  .section-label { font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--navy); margin: 0 0 8px; padding-left: 2px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .kpi { background: var(--navy); border-radius: var(--radius-md); padding: 0.85rem 1rem; }
+  .kpi-label { font-size: 11px; font-weight: 700; color: var(--navy-text-soft); margin: 0 0 4px; }
+  .kpi-val   { font-size: 24px; font-weight: 700; color: #fff; margin: 0; }
+  .kpi-sub   { font-size: 11px; margin: 3px 0 0; }
+  .kpi-good { color: var(--good-soft); } .kpi-warn { color: var(--warn-soft); }
+  .kpi-bad  { color: var(--bad-soft);  } .kpi-muted{ color: var(--navy-text-soft); }
+  .card { background: var(--grey-card); border: 1.5px solid var(--cyan); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--navy); margin: 0 0 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; }
+  .b-db { background: var(--navy); color: #fff; } .b-fts { background: var(--cyan); color: #fff; }
+  .b-warn { background: var(--warn-bg); color: var(--warn-fg); } .b-draft { background: #fff; color: var(--navy); }
+  .b-note { background: #e6eaf2; color: var(--navy); }
+  .divider { height: 1px; background: var(--grey-border); margin: 10px 0; }
+  .row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--grey-border); }
+  .row:last-child { border-bottom: none; }
+  .row-label { font-size: 13px; font-weight: 700; color: var(--navy); flex: 1; }
+  .row-meta  { font-size: 12px; color: var(--grey-text); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dg { background: var(--good); } .da { background: var(--warn); } .dr { background: var(--bad); }
+  .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .pill { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+  .pill-green { background: var(--good-bg); color: var(--good-fg); }
+  .pill-amber { background: var(--warn-bg); color: var(--warn-fg); }
+  .pill-red   { background: var(--bad-bg);  color: var(--bad-fg);  }
+  .sys-row, .agent-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--grey-border); }
+  .sys-row:last-child, .agent-row:last-child { border-bottom: none; }
+  .sys-name { font-size: 13px; font-weight: 700; color: var(--navy); flex: 1; }
+  .sys-bu { font-size: 11px; color: var(--cyan); font-weight: 700; margin-right: 6px; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .sd-on { background: var(--good); } .sd-off { background: var(--bad); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .agent-name { font-size: 13px; font-weight: 700; color: var(--navy); margin: 0; }
+  .agent-meta { font-size: 11px; color: var(--grey-text); margin: 0; }
+  .ci-in { background: var(--good-bg); color: var(--good-fg); font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 700; margin-left: auto; }
+  .ci-out { background: #fff; color: var(--navy); font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 700; margin-left: auto; }
+  .accent-bar { height: 3px; background: var(--cyan); border-radius: 2px; margin-bottom: 10px; }
+  .footer-text { font-size: 11px; color: var(--grey-text); margin: 14px 0 0; padding-top: 10px; border-top: 1px solid var(--grey-border); }
+  .trend-wrap { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin: 8px 0 4px; }
+  .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+  .bar { width: 100%; background: var(--navy); border-radius: 3px 3px 0 0; min-height: 4px; }
+  .bar-prev { background: var(--cyan); opacity: 0.5; }
+  .bar-label { font-size: 10px; font-weight: 700; color: var(--navy); }
+  .trend-legend { display: flex; gap: 12px; margin-top: 6px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--grey-text); }
+  .legend-dot  { width: 10px; height: 10px; border-radius: 2px; }
+  .agent-toggle { font-size: 11px; padding: 3px 12px; border: 1px solid var(--cyan); border-radius: 20px; background: transparent; color: var(--cyan); font-weight: 600; cursor: pointer; }
+  .agent-toggle.active { background: var(--cyan); color: #fff; }
+  .wo-tile { background: #fff; border: 1px solid var(--grey-border); border-radius: 6px; padding: 6px 4px; text-align: center; }
+  .wo-tile-bu { font-size: 10px; font-weight: 700; }
+  .wo-tile-bu.fts { color: var(--cyan); } .wo-tile-bu.gen { color: var(--navy); }
+  .wo-tile-val { font-size: 15px; font-weight: 700; color: var(--navy); margin-top: 2px; }
+  .placeholder-content { background: #fff; border: 2px dashed var(--grey-border); border-radius: var(--radius-lg); padding: 50px 20px; text-align: center; color: var(--grey-text); }
+  .placeholder-content h2 { color: var(--navy); margin: 0 0 8px; }
+  .placeholder-content .icon { font-size: 36px; margin-bottom: 8px; }
+  .placeholder-content ul { text-align: left; max-width: 480px; margin: 16px auto; padding-left: 22px; }
+</style>
+</head>
+<body>
+<header class="app-header">
+  <h1>OPEX MBR &amp; KPI Dashboard</h1>
+  <div class="meta"><div>QMS &mdash; Reliability &amp; Support</div><div id="hdr-date"></div></div>
+</header>
+<nav class="tabs" id="tabs">
+  <button class="active" data-tab="zendesk">Support Operations<span class="badge">LIVE</span></button>
+  <button class="placeholder" data-tab="about">About</button>
+</nav>
+<main>
+  <section id="tab-zendesk" class="tab-content active">
+    <div class="dash">
+      <div class="header">
+        <div>
+          <p class="header-title">GroundProbe &mdash; Support Operations</p>
+          <p class="header-sub">Support &amp; proactive monitoring &middot; Snapshot <span id="snapshot-date"></span></p>
+        </div>
+        <span class="header-badge">v1.5 &mdash; WO strip + aged drilldown</span>
+      </div>
+
+      <div style="background:var(--warn-bg);border-left:4px solid var(--warn);padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;color:var(--warn-fg)">
+        <strong>Data is stale.</strong> Latest ticket in opex-db created <strong>16 March 2026</strong>; last sync ~<strong>11 April 2026</strong>. Tickets created in the last ~7&ndash;30 days are not yet in the database.
+      </div>
+
+      <div class="filter-section">
+        <p class="filter-group-label">Follow the Sun &mdash; 24/7 support desk</p>
+        <div class="filter-bar">
+          <span class="filter-btn fts active" data-filter="fts">All Follow the Sun</span>
+          <span class="filter-btn fts" data-filter="GPAU">GPAU</span>
+          <span class="filter-btn fts" data-filter="GPSA">GPSA</span>
+          <span class="filter-btn fts" data-filter="GPNA">GPNA</span>
+        </div>
+        <p class="filter-group-label">All tickets &mdash; all BUs</p>
+        <div class="filter-bar">
+          <span class="filter-btn" data-filter="all">All BUs</span>
+          <span class="filter-btn" data-filter="GPPT">GPPT</span>
+          <span class="filter-btn" data-filter="GPID">GPID</span>
+          <span class="filter-btn" data-filter="GPCN">GPCN</span>
+          <span class="filter-btn" data-filter="GPPE">GPPE</span>
+          <span class="filter-btn" data-filter="GPCL">GPCL</span>
+          <span class="filter-btn" data-filter="GPBR">GPBR</span>
+        </div>
+      </div>
+
+      <p class="section-label" id="view-label">KPI Summary &mdash; Follow the Sun</p>
+      <div class="kpi-grid">
+        <div class="kpi"><p class="kpi-label">Calls answered</p><p class="kpi-val" id="kpi-calls">&mdash;</p><p class="kpi-sub" id="kpi-calls-sub">FTS only &middot; Target: 100%</p></div>
+        <div class="kpi"><p class="kpi-label">First reply time</p><p class="kpi-val" id="kpi-reply">&mdash;</p><p class="kpi-sub" id="kpi-reply-sub">Target: under 100min</p></div>
+        <div class="kpi"><p class="kpi-label">Tickets &gt;7 days</p><p class="kpi-val" id="kpi-aged-7">&mdash;</p><p class="kpi-sub" id="kpi-aged-7-sub">Max allowed: 8</p></div>
+        <div class="kpi"><p class="kpi-label">Tickets &gt;30 days</p><p class="kpi-val" id="kpi-aged-30">&mdash;</p><p class="kpi-sub" id="kpi-aged-30-sub">Max allowed: 2</p></div>
+        <div class="kpi"><p class="kpi-label">Tickets closed</p><p class="kpi-val" id="kpi-closed">&mdash;</p><p class="kpi-sub kpi-good" id="kpi-closed-sub">Last full month</p></div>
+        <div class="kpi"><p class="kpi-label">System uptime</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">Placeholder</p></div>
+      </div>
+
+      <div class="two-col">
+        <div class="card" id="calls-card">
+          <div class="accent-bar"></div>
+          <p class="card-title">Calls Answered <span class="badge b-fts">Follow the Sun only</span></p>
+          <div id="calls-rows"></div>
+          <div id="calls-na" style="display:none">
+            <p style="font-size:12px;color:var(--grey-text);margin:0">Call tracking applies to Follow the Sun BUs only &mdash; GPAU, GPSA, GPNA</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="accent-bar"></div>
+          <p class="card-title">Aged Tickets <span class="badge b-warn">All BUs &middot; Thresholds apply</span><span style="margin-left:auto;font-size:11px;color:var(--grey-text);font-weight:500">Click a row to expand</span></p>
+          <div class="row" onclick="toggleAged(7)" style="cursor:pointer"><div class="dot da"></div><span class="row-label">Tickets &gt;7 days</span><span class="pill" id="pill-aged-7">&mdash;</span><span id="caret-aged-7" style="margin-left:6px;color:var(--cyan);font-size:11px;font-weight:700">&#9662;</span></div>
+          <div id="detail-aged-7" style="display:none;padding:8px 0 8px 18px;border-bottom:1px solid var(--grey-border)"></div>
+          <div class="row" onclick="toggleAged(30)" style="cursor:pointer"><div class="dot dr"></div><span class="row-label">Tickets &gt;30 days</span><span class="pill" id="pill-aged-30">&mdash;</span><span id="caret-aged-30" style="margin-left:6px;color:var(--cyan);font-size:11px;font-weight:700">&#9662;</span></div>
+          <div id="detail-aged-30" style="display:none;padding:8px 0 8px 18px;border-bottom:1px solid var(--grey-border)"></div>
+          <div class="divider"></div>
+          <p style="font-size:12px;color:var(--grey-text);margin:0">Tickets &gt;30 days unacceptable per GP KPI standard. Immediate review required.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="accent-bar"></div>
+          <p class="card-title">Ticket Volume Trend <span class="badge b-draft">Last 4 wks vs previous 4 wks &middot; All BUs</span></p>
+          <div class="trend-wrap" id="trend-bars"></div>
+          <div style="display:flex;justify-content:space-between;padding:0 2px" id="trend-labels"></div>
+          <div class="trend-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--navy)"></div>This period</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--cyan);opacity:0.5"></div>Previous period</div>
+          </div>
+          <div class="divider"></div>
+          <p style="font-size:12px;color:var(--grey-text);margin:0">Tickets opened per ISO week across all BUs</p>
+        </div>
+        <div class="card">
+          <div class="accent-bar"></div>
+          <p class="card-title">Time to First WO Creation <span class="badge b-warn">Placeholder &middot; D365 link pending</span></p>
+          <div class="kpi-grid" style="margin-bottom:10px">
+            <div class="kpi"><p class="kpi-label">Avg time to WO</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">Pending</p></div>
+            <div class="kpi"><p class="kpi-label">Fastest</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">&mdash;</p></div>
+            <div class="kpi"><p class="kpi-label">Slowest</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">&mdash;</p></div>
+          </div>
+          <div class="divider"></div>
+          <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy);margin:0 0 6px">Avg WO creation time per BU</p>
+          <div id="wo-tiles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:4px">
+            <div class="wo-tile"><div class="wo-tile-bu fts">GPAU</div><div class="wo-tile-val">&mdash;</div></div>
+            <div class="wo-tile"><div class="wo-tile-bu fts">GPSA</div><div class="wo-tile-val">&mdash;</div></div>
+            <div class="wo-tile"><div class="wo-tile-bu fts">GPNA</div><div class="wo-tile-val">&mdash;</div></div>
+            <div class="wo-tile"><div class="wo-tile-bu gen">GPPT</div><div class="wo-tile-val">&mdash;</div></div>
+            <div class="wo-tile"><div class="wo-tile-bu gen">GPID</div><div class="wo-tile-val">&mdash;</div></div>
+            <div class="wo-tile"><div class="wo-tile-bu gen">GPCN</div><div class="wo-tile-val">&mdash;</div></div>
+            <div class="wo-tile"><div class="wo-tile-bu gen">GPPE</div><div class="wo-tile-val">&mdash;</div></div>
+            <div class="wo-tile"><div class="wo-tile-bu gen">GPCL</div><div class="wo-tile-val">&mdash;</div></div>
+            <div class="wo-tile"><div class="wo-tile-bu gen">GPBR</div><div class="wo-tile-val">&mdash;</div></div>
+          </div>
+          <div class="divider"></div>
+          <p style="font-size:11px;color:var(--grey-text);margin:0 0 8px"><strong style="color:var(--navy)">Note:</strong> This data is only for WOs created via Zendesk and assigned to a ticket. WOs raised directly in D365 are not counted here.</p>
+          <a href="#" onclick="alert('D365 dashboard link to be configured'); return false;" style="display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--cyan);padding:6px 14px;border-radius:20px;text-decoration:none">Open D365 Dashboard &rarr;</a>
+          <p style="font-size:11px;color:var(--grey-text);margin:6px 0 0;font-style:italic">All BUs included &middot; values populate once D365 link is wired</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card" id="proactive-card">
+          <div class="accent-bar"></div>
+          <p class="card-title">
+            Proactive Alerts &mdash; Web-Upload
+            <span class="badge b-warn">WIP &middot; DB fix pending</span>
+            <span style="display:flex;gap:4px;margin-left:auto">
+              <button type="button" class="agent-toggle active" data-pro-view="7days" onclick="proactiveView('7days')">7 days</button>
+              <button type="button" class="agent-toggle" data-pro-view="30days" onclick="proactiveView('30days')">30 days</button>
+            </span>
+          </p>
+
+          <div data-pro-pane="7days">
+            <div class="kpi-grid" style="margin-bottom:10px">
+              <div class="kpi"><p class="kpi-label">Systems using webupload</p><p class="kpi-val">106</p><p class="kpi-sub kpi-good">Active uploaders, 7 days</p></div>
+              <div class="kpi"><p class="kpi-label">Alerts triggered by webupload</p><p class="kpi-val">2,153</p><p class="kpi-sub kpi-warn">No-upload alerts, 7 days</p></div>
+            </div>
+            <div class="divider"></div>            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy);margin:0 0 6px">Webupload activity per BU (7 days) &mdash; <span style="color:var(--grey-text);font-weight:500;text-transform:none">systems active &middot; alarms triggered</span></p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:4px">
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPAU</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">30</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">351</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPSA</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">30</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">444</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPNA</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">17</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">337</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPPT</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">13</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">245</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPID</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">4</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">41</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPCN</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">0</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">36</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPPE</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">2</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">85</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPCL</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">4</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">284</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPBR</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">6</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">297</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div data-pro-pane="30days" style="display:none">
+            <div class="kpi-grid" style="margin-bottom:10px">
+              <div class="kpi"><p class="kpi-label">Systems using webupload</p><p class="kpi-val">106</p><p class="kpi-sub kpi-good">Active uploaders, 30 days</p></div>
+              <div class="kpi"><p class="kpi-label">Alerts triggered by webupload</p><p class="kpi-val">2,153</p><p class="kpi-sub kpi-warn">No-upload alerts, 30 days</p></div>
+            </div>
+            <div class="divider"></div>            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy);margin:0 0 6px">Webupload activity per BU (30 days) &mdash; <span style="color:var(--grey-text);font-weight:500;text-transform:none">systems active &middot; alarms triggered</span></p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:4px">
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPAU</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">30</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">351</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPSA</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">30</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">444</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPNA</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">17</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">337</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPPT</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">13</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">245</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPID</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">4</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">41</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPCN</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">0</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">36</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPPE</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">2</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">85</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPCL</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">4</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">284</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+              <div class="wo-tile" style="padding:6px 4px">
+                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPBR</div>
+                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy)">6</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
+                </div>
+                <div style="margin-top:3px">
+                  <div style="font-size:14px;font-weight:700;color:var(--bad)">297</div>
+                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p style="font-size:11px;color:var(--grey-text);margin:6px 0 0;font-style:italic">Sources: <code>logs.ProcessedFiles</code> + <code>proactive.DailyFailureSummary</code> &middot; data ~28 days behind &middot; 7-day and 30-day match because only 3 days of data are loaded</p>
+        </div>
+        <div class="card">
+          <div class="accent-bar"></div>
+          <p class="card-title">System Status <span class="badge b-warn">Placeholder &middot; Zendesk filter WIP</span></p>
+          <div style="display:flex;align-items:center;gap:10px;padding:4px 0 6px;border-bottom:2px solid var(--grey-border);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--grey-text)">
+            <div style="width:10px"></div>
+            <span style="min-width:80px">SSR #</span>
+            <span style="flex:1">BU owning SSR</span>
+            <span style="min-width:120px;text-align:right">System Status</span>
+            <span style="min-width:90px;text-align:right">Downtime</span>
+          </div>
+          <div id="sys-rows">
+            <div class="sys-row" data-bu="GPAU,fts"><div class="status-dot" style="background:var(--grey-border)"></div><span class="sys-name" style="min-width:80px;flex:none">SSR &mdash;&mdash;</span><span style="flex:1;font-size:12px;color:var(--cyan);font-weight:700">GPAU</span><span class="pill" style="background:#eee;color:var(--grey-text);min-width:120px;text-align:center">Awaiting filter</span><span style="min-width:90px;text-align:right;font-size:12px;color:var(--grey-text)">&mdash;</span></div>
+            <div class="sys-row" data-bu="GPSA,fts"><div class="status-dot" style="background:var(--grey-border)"></div><span class="sys-name" style="min-width:80px;flex:none">SSR &mdash;&mdash;</span><span style="flex:1;font-size:12px;color:var(--cyan);font-weight:700">GPSA</span><span class="pill" style="background:#eee;color:var(--grey-text);min-width:120px;text-align:center">Awaiting filter</span><span style="min-width:90px;text-align:right;font-size:12px;color:var(--grey-text)">&mdash;</span></div>
+            <div class="sys-row" data-bu="GPNA,fts"><div class="status-dot" style="background:var(--grey-border)"></div><span class="sys-name" style="min-width:80px;flex:none">SSR &mdash;&mdash;</span><span style="flex:1;font-size:12px;color:var(--cyan);font-weight:700">GPNA</span><span class="pill" style="background:#eee;color:var(--grey-text);min-width:120px;text-align:center">Awaiting filter</span><span style="min-width:90px;text-align:right;font-size:12px;color:var(--grey-text)">&mdash;</span></div>
+            <div class="sys-row" data-bu="GPPT"><div class="status-dot" style="background:var(--grey-border)"></div><span class="sys-name" style="min-width:80px;flex:none">SSR &mdash;&mdash;</span><span style="flex:1;font-size:12px;color:var(--navy);font-weight:700">GPPT</span><span class="pill" style="background:#eee;color:var(--grey-text);min-width:120px;text-align:center">Awaiting filter</span><span style="min-width:90px;text-align:right;font-size:12px;color:var(--grey-text)">&mdash;</span></div>
+            <div class="sys-row" data-bu="GPID"><div class="status-dot" style="background:var(--grey-border)"></div><span class="sys-name" style="min-width:80px;flex:none">SSR &mdash;&mdash;</span><span style="flex:1;font-size:12px;color:var(--navy);font-weight:700">GPID</span><span class="pill" style="background:#eee;color:var(--grey-text);min-width:120px;text-align:center">Awaiting filter</span><span style="min-width:90px;text-align:right;font-size:12px;color:var(--grey-text)">&mdash;</span></div>
+            <div class="sys-row" data-bu="GPCN"><div class="status-dot" style="background:var(--grey-border)"></div><span class="sys-name" style="min-width:80px;flex:none">SSR &mdash;&mdash;</span><span style="flex:1;font-size:12px;color:var(--navy);font-weight:700">GPCN</span><span class="pill" style="background:#eee;color:var(--grey-text);min-width:120px;text-align:center">Awaiting filter</span><span style="min-width:90px;text-align:right;font-size:12px;color:var(--grey-text)">&mdash;</span></div>
+            <div class="sys-row" data-bu="GPPE"><div class="status-dot" style="background:var(--grey-border)"></div><span class="sys-name" style="min-width:80px;flex:none">SSR &mdash;&mdash;</span><span style="flex:1;font-size:12px;color:var(--navy);font-weight:700">GPPE</span><span class="pill" style="background:#eee;color:var(--grey-text);min-width:120px;text-align:center">Awaiting filter</span><span style="min-width:90px;text-align:right;font-size:12px;color:var(--grey-text)">&mdash;</span></div>
+            <div class="sys-row" data-bu="GPCL"><div class="status-dot" style="background:var(--grey-border)"></div><span class="sys-name" style="min-width:80px;flex:none">SSR &mdash;&mdash;</span><span style="flex:1;font-size:12px;color:var(--navy);font-weight:700">GPCL</span><span class="pill" style="background:#eee;color:var(--grey-text);min-width:120px;text-align:center">Awaiting filter</span><span style="min-width:90px;text-align:right;font-size:12px;color:var(--grey-text)">&mdash;</span></div>
+            <div class="sys-row" data-bu="GPBR"><div class="status-dot" style="background:var(--grey-border)"></div><span class="sys-name" style="min-width:80px;flex:none">SSR &mdash;&mdash;</span><span style="flex:1;font-size:12px;color:var(--navy);font-weight:700">GPBR</span><span class="pill" style="background:#eee;color:var(--grey-text);min-width:120px;text-align:center">Awaiting filter</span><span style="min-width:90px;text-align:right;font-size:12px;color:var(--grey-text)">&mdash;</span></div>
+          </div>
+          <div class="divider"></div>
+          <p style="font-size:12px;color:var(--grey-text);margin:0">Source: Zendesk filter (WIP). Each row = one SSR with its current status (Operational / Offline) and downtime counter.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="accent-bar"></div>
+          <p class="card-title">Ticket Escalations <span class="badge b-draft">Zendesk config pending</span></p>
+          <div class="kpi-grid" style="margin-bottom:10px">
+            <div class="kpi"><p class="kpi-label">L3 escalations</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">Pending config</p></div>
+            <div class="kpi"><p class="kpi-label">L4 escalations</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">Pending config</p></div>
+          </div>
+          <div class="divider"></div>
+          <p style="font-size:12px;color:var(--grey-text);margin:0">Live counts once L3/L4 Zendesk routing is configured.</p>
+        </div>
+
+        <div class="card" id="agent-card">
+          <div class="accent-bar"></div>
+          <p class="card-title">
+            Agent Check-in / Check-out
+            <span class="badge b-warn">Placeholder</span>
+            <span style="display:flex;gap:4px;margin-left:auto">
+              <button type="button" class="agent-toggle active" data-agent-view="today" onclick="agentView('today')">Today</button>
+              <button type="button" class="agent-toggle" data-agent-view="week" onclick="agentView('week')">Last 7 days</button>
+            </span>
+          </p>
+          <div data-agent-pane="today">
+            <div class="kpi-grid" style="margin-bottom:10px">
+              <div class="kpi"><p class="kpi-label">Online now</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">Live</p></div>
+              <div class="kpi"><p class="kpi-label">Checked in</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">Today</p></div>
+              <div class="kpi"><p class="kpi-label">Avg on desk</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">Today</p></div>
+              <div class="kpi"><p class="kpi-label">Tickets solved</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">During shift</p></div>
+            </div>
+            <div class="divider"></div>
+            <div class="agent-row"><div class="avatar">--</div><div style="flex:1"><p class="agent-name">Agent name</p><p class="agent-meta">Checked in HH:MM &middot; BU &middot; tickets solved</p></div><span class="ci-in">Checked in</span></div>
+            <div class="agent-row"><div class="avatar">--</div><div style="flex:1"><p class="agent-name">Agent name</p><p class="agent-meta">Checked out HH:MM &middot; BU &middot; tickets solved</p></div><span class="ci-out">Checked out</span></div>
+          </div>
+          <div data-agent-pane="week" style="display:none">
+            <div class="kpi-grid" style="margin-bottom:10px">
+              <div class="kpi"><p class="kpi-label">Unique agents</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">7 days</p></div>
+              <div class="kpi"><p class="kpi-label">Total shifts</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">7 days</p></div>
+              <div class="kpi"><p class="kpi-label">Avg shift</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">Hours</p></div>
+              <div class="kpi"><p class="kpi-label">Tickets solved</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">During shifts</p></div>
+            </div>
+            <div class="divider"></div>
+            <div class="agent-row"><div class="avatar">--</div><div style="flex:1"><p class="agent-name">Agent name</p><p class="agent-meta">5 shifts &middot; 38h 20min &middot; GPAU &middot; &mdash; solved</p></div><span class="ci-out">&mdash;</span></div>
+            <div class="agent-row"><div class="avatar">--</div><div style="flex:1"><p class="agent-name">Agent name</p><p class="agent-meta">4 shifts &middot; 30h 15min &middot; GPNA &middot; &mdash; solved</p></div><span class="ci-out">&mdash;</span></div>
+            <div class="agent-row"><div class="avatar">--</div><div style="flex:1"><p class="agent-name">Agent name</p><p class="agent-meta">3 shifts &middot; 22h 45min &middot; GPSA &middot; &mdash; solved</p></div><span class="ci-out">&mdash;</span></div>
+          </div>
+          <div class="divider"></div>
+          <p style="font-size:12px;color:var(--grey-text);margin:0">Pending Zendesk Professional Suite. See full Agent Check-in tab for the planned layout.</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div class="accent-bar"></div>
+        <p class="card-title">Agent Quality Metric <span class="badge b-warn">Placeholder &middot; pending Zendesk Pro Suite</span></p>
+        <p style="font-size:12px;color:var(--grey-text);margin:0 0 10px">All agents checked in over the last 30 days. Solve Rate and Non-Solved Touch Rate help separate &ldquo;active&rdquo; from &ldquo;effective&rdquo;.</p>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:var(--navy);color:#fff">
+                <th style="text-align:left;padding:8px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Agent</th>
+                <th style="text-align:right;padding:8px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">New</th>
+                <th style="text-align:right;padding:8px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Open</th>
+                <th style="text-align:right;padding:8px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Pending</th>
+                <th style="text-align:right;padding:8px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">On Hold</th>
+                <th style="text-align:right;padding:8px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Solved</th>
+                <th style="text-align:right;padding:8px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;background:var(--cyan)">Solve Rate</th>
+                <th style="text-align:right;padding:8px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;background:var(--cyan)">Non-Solved Touch Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:7px 10px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--grey-border)">Agent name</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border);font-weight:700;color:var(--good)">&mdash;%</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border);font-weight:700;color:var(--warn)">&mdash;%</td></tr>
+              <tr><td style="padding:7px 10px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--grey-border)">Agent name</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border);font-weight:700;color:var(--good)">&mdash;%</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border);font-weight:700;color:var(--warn)">&mdash;%</td></tr>
+              <tr><td style="padding:7px 10px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--grey-border)">Agent name</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border)">&mdash;</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border);font-weight:700;color:var(--good)">&mdash;%</td><td style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--grey-border);font-weight:700;color:var(--warn)">&mdash;%</td></tr>
+              <tr><td style="padding:7px 10px;font-weight:700;color:var(--navy)">Agent name</td><td style="text-align:right;padding:7px 10px">&mdash;</td><td style="text-align:right;padding:7px 10px">&mdash;</td><td style="text-align:right;padding:7px 10px">&mdash;</td><td style="text-align:right;padding:7px 10px">&mdash;</td><td style="text-align:right;padding:7px 10px">&mdash;</td><td style="text-align:right;padding:7px 10px;font-weight:700;color:var(--good)">&mdash;%</td><td style="text-align:right;padding:7px 10px;font-weight:700;color:var(--warn)">&mdash;%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size:11px;color:var(--grey-text);margin:0">
+          <strong style="color:var(--navy)">Solve Rate</strong> = Tickets Solved &divide; Tickets Updated &middot;
+          <strong style="color:var(--navy)">Non-Solved Touch Rate</strong> = (Tickets Updated &minus; Tickets Solved) &divide; Tickets Updated.
+        </p>
+      </div>
+
+      <p class="footer-text">Sources: Zendesk (live) &middot; D365 (pending) &middot; proactive.* (pending) &middot; L3/L4 pending Zendesk config.</p>
+    </div>
+  </section>
+
+  <section id="tab-about" class="tab-content">
+    <div class="placeholder-content"><div class="icon">&#128202;</div><h2>About this dashboard</h2><p>QMS section of the OPEX MBR &amp; KPI dashboard.</p><ul><li><strong>Owner:</strong> QMS &mdash; Reliability &amp; Support team</li><li><strong>Layout:</strong> v9 &mdash; Follow-the-Sun + All BUs filter</li><li><strong>Data source:</strong> OPEX SQL database (<code>sup</code>, <code>proactive</code>, <code>eam</code>)</li><li><strong>Refresh:</strong> Snapshot &mdash; re-run queries in <code>CLAUDE.md</code></li></ul></div>
+  </section>
+</main>
+
+<script>
+const FTS_BUS = ['GPAU','GPSA','GPNA'];
+
+const DATA = {
+  buildDate: "2026-05-05",
+  calls: {
+    overall: { acceptedPct: 91.7, total: 12, accepted: 11, missed: 1 },
+    byBU: [
+      { bu: "GPAU", pct: 100,  total: 6, missed: 0, status: "good" },
+      { bu: "GPSA", pct: 87.5, total: 4, missed: 1, status: "bad"  },
+      { bu: "GPNA", pct: 100,  total: 2, missed: 0, status: "good" }
+    ]
+  },
+  firstReply: { minutes: 223, targetMinutes: 100 },
+  aged: {
+    over7AllBUs: 12, over30AllBUs: 12, target7: 8, target30: 2,
+    byBU: {
+      GPAU: { over7: 3, over30: 3 }, GPSA: { over7: 5, over30: 5 },
+      GPNA: { over7: 3, over30: 3 }, GPPT: { over7: 0, over30: 0 },
+      GPID: { over7: 0, over30: 0 }, GPCN: { over7: 1, over30: 1 },
+      GPPE: { over7: 0, over30: 0 }, GPCL: { over7: 0, over30: 0 },
+      GPBR: { over7: 0, over30: 0 }
+    }
+  },
+  agedTickets: [
+    { id: 33957, bu: "GPAU", subject: "Issue Encountered with Jack Leg During SSR-777 Setup",  age: 125, status: "open"    },
+    { id: 34034, bu: "GPNA", subject: "Morenci/Phone Conversation/800/737/879 - Dec 2025",     age: 120, status: "pending" },
+    { id: 34297, bu: "GPNA", subject: "Gahcho Kue / Grey Alert (Link Down) / SSR222XT",         age: 103, status: "hold"    },
+    { id: 34462, bu: "GPSA", subject: "SSR 733 is not working",                                 age: 95,  status: "pending" },
+    { id: 34494, bu: "GPSA", subject: "Slope Stability Radar program request",                  age: 94,  status: "pending" },
+    { id: 34531, bu: "GPSA", subject: "SSR245XT Elevation issue",                               age: 91,  status: "pending" },
+    { id: 34625, bu: "GPNA", subject: "RADAR OFFLINE on SSR340XT - ArcelorMittal",              age: 86,  status: "pending" },
+    { id: 34644, bu: "GPSA", subject: "Power Supply Issue on SSR930FX - ZCMC Mine",             age: 84,  status: "open"    },
+    { id: 34659, bu: "GPAU", subject: "SSR810 Netburner Lock Lost",                             age: 83,  status: "hold"    },
+    { id: 34704, bu: "GPSA", subject: "SSR 256 is down since January 8, 2026",                  age: 81,  status: "hold"    },
+    { id: 35170, bu: "GPAU", subject: "Technical Support - Velocity",                           age: 54,  status: "pending" },
+    { id: 35245, bu: "GPCN", subject: "Leinster Line Issue on SSR1003XT - Hami",                age: 49,  status: "hold"    }
+  ],
+  ticketsClosed: { count: 419, period: "Feb 2026" },
+  trend: {
+    labels: ["Wk-3","Wk-2","Wk-1","Latest"],
+    current:  [119, 104, 126, 96],
+    previous: [133, 112, 108, 94]
+  }
+};
+
+document.getElementById('hdr-date').textContent      = "Snapshot: " + DATA.buildDate;
+document.getElementById('snapshot-date').textContent = DATA.buildDate;
+
+document.querySelectorAll('nav.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+const callsRows = document.getElementById('calls-rows');
+DATA.calls.byBU.forEach(c => {
+  const dotClass = c.status === 'good' ? 'dg' : (c.status === 'warn' ? 'da' : 'dr');
+  const detail = c.missed > 0
+    ? '<span class="row-meta" style="color:var(--bad)">' + c.pct + '% — ' + c.missed + ' missed (' + c.total + ' total)</span>'
+    : '<span class="row-meta">' + c.pct + '% (' + c.total + ' calls)</span>';
+  const div = document.createElement('div');
+  div.className = 'row';
+  div.dataset.bu = c.bu + ',fts';
+  div.innerHTML = '<div class="dot ' + dotClass + '"></div><span class="row-label">' + c.bu + '</span>' + detail;
+  callsRows.appendChild(div);
+});
+
+function setKpi(id, val, subId, subText, subClass) {
+  document.getElementById(id).textContent = val;
+  if (subId) {
+    const sub = document.getElementById(subId);
+    sub.innerHTML = subText;
+    sub.className = "kpi-sub " + (subClass || "");
+  }
+}
+
+function kpiClass(val, target, lowerIsBetter) {
+  if (lowerIsBetter) {
+    if (val <= target)       return "kpi-good";
+    if (val <= target * 1.5) return "kpi-warn";
+    return "kpi-bad";
+  } else {
+    if (val >= target)        return "kpi-good";
+    if (val >= target * 0.95) return "kpi-warn";
+    return "kpi-bad";
+  }
+}
+
+function renderKpis(filter) {
+  const isFts = (filter === 'fts');
+  const isBuFts = FTS_BUS.includes(filter);
+  let callPct, callsLabel;
+  if (filter === 'all') {
+    callPct = '—'; callsLabel = "FTS only · not applicable";
+  } else if (isFts) {
+    callPct = DATA.calls.overall.acceptedPct.toFixed(1) + '%';
+    callsLabel = "Target: 100% · " + DATA.calls.overall.total + " calls";
+  } else if (isBuFts) {
+    const c = DATA.calls.byBU.find(x => x.bu === filter);
+    callPct = c ? c.pct.toFixed(0) + '%' : '—';
+    callsLabel = c ? "Target: 100% · " + c.total + " calls" : "—";
+  } else {
+    callPct = '—'; callsLabel = "FTS only · not applicable";
+  }
+  document.getElementById('kpi-calls').textContent = callPct;
+  const callsSub = document.getElementById('kpi-calls-sub');
+  callsSub.innerHTML = callsLabel;
+  const num = parseFloat(callPct);
+  callsSub.className = "kpi-sub " + (isNaN(num) ? "kpi-muted" : kpiClass(num, 100, false));
+
+  const fr = DATA.firstReply;
+  setKpi('kpi-reply', fr.minutes + 'min', 'kpi-reply-sub',
+    'Target: under ' + fr.targetMinutes + 'min', kpiClass(fr.minutes, fr.targetMinutes, true));
+
+  let v7, v30;
+  if (filter === 'all') {
+    v7 = DATA.aged.over7AllBUs; v30 = DATA.aged.over30AllBUs;
+  } else if (filter === 'fts') {
+    v7  = FTS_BUS.reduce((a,b) => a + (DATA.aged.byBU[b].over7  || 0), 0);
+    v30 = FTS_BUS.reduce((a,b) => a + (DATA.aged.byBU[b].over30 || 0), 0);
+  } else if (DATA.aged.byBU[filter]) {
+    v7 = DATA.aged.byBU[filter].over7; v30 = DATA.aged.byBU[filter].over30;
+  } else { v7 = 0; v30 = 0; }
+
+  setKpi('kpi-aged-7',  v7,  'kpi-aged-7-sub',  'Max allowed: ' + DATA.aged.target7,  kpiClass(v7,  DATA.aged.target7,  true));
+  setKpi('kpi-aged-30', v30, 'kpi-aged-30-sub', 'Max allowed: ' + DATA.aged.target30, kpiClass(v30, DATA.aged.target30, true));
+
+  document.getElementById('pill-aged-7').textContent  = v7  + " open · max " + DATA.aged.target7;
+  document.getElementById('pill-aged-30').textContent = v30 + " open · max " + DATA.aged.target30;
+  document.getElementById('pill-aged-7').className   = "pill " + (v7  > DATA.aged.target7  ? "pill-red" : (v7  > 0 ? "pill-amber" : "pill-green"));
+  document.getElementById('pill-aged-30').className  = "pill " + (v30 > DATA.aged.target30 ? "pill-red" : (v30 > 0 ? "pill-amber" : "pill-green"));
+
+  setKpi('kpi-closed', DATA.ticketsClosed.count, 'kpi-closed-sub', DATA.ticketsClosed.period, "kpi-good");
+}
+
+function applyFilter(filter) {
+  const isFts = filter === 'fts' || FTS_BUS.includes(filter);
+  const label = filter === 'fts' ? 'KPI Summary — Follow the Sun'
+              : (filter === 'all' ? 'KPI Summary — All BUs' : 'KPI Summary — ' + filter);
+  document.getElementById('view-label').textContent = label;
+  ['calls-rows','sys-rows'].forEach(id => {
+    const c = document.getElementById(id);
+    if (!c) return;
+    Array.from(c.children).forEach(row => {
+      const tags = (row.dataset.bu || '').split(',');
+      let show = false;
+      if (filter === 'all') show = true;
+      else if (filter === 'fts') show = tags.includes('fts');
+      else show = tags.includes(filter);
+      row.style.display = show ? '' : 'none';
+    });
+  });
+  const cRows = document.getElementById('calls-rows');
+  const cNA   = document.getElementById('calls-na');
+  if (isFts) { cRows.style.display = ''; cNA.style.display = 'none'; }
+  else       { cRows.style.display = 'none'; cNA.style.display = ''; }
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+  renderKpis(filter);
+  [7, 30].forEach(t => {
+    const d = document.getElementById('detail-aged-' + t);
+    if (d && d.style.display !== 'none') renderAgedDetail(t, filter);
+  });
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+});
+
+function buildTrend() {
+  const wrap = document.getElementById('trend-bars');
+  const labelRow = document.getElementById('trend-labels');
+  const cur = DATA.trend.current, prev = DATA.trend.previous, lab = DATA.trend.labels;
+  const max = Math.max.apply(null, cur.concat(prev));
+  lab.forEach((m, i) => {
+    const col = document.createElement('div'); col.className = 'bar-col';
+    const valLabel = document.createElement('div'); valLabel.className = 'bar-label'; valLabel.textContent = cur[i];
+    const inner = document.createElement('div'); inner.style.cssText = 'display:flex;align-items:flex-end;gap:3px;width:100%';
+    const bPrev = document.createElement('div'); bPrev.className = 'bar bar-prev';
+    bPrev.style.height = Math.round((prev[i] / max) * 72) + 'px'; bPrev.title = 'Previous: ' + prev[i];
+    const bCurr = document.createElement('div'); bCurr.className = 'bar';
+    bCurr.style.height = Math.round((cur[i] / max) * 72) + 'px';  bCurr.title = 'Current: ' + cur[i];
+    inner.appendChild(bPrev); inner.appendChild(bCurr);
+    col.appendChild(valLabel); col.appendChild(inner);
+    wrap.appendChild(col);
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:10px;color:var(--grey-text);font-weight:700;flex:1;text-align:center';
+    lbl.textContent = m;
+    labelRow.appendChild(lbl);
+  });
+}
+buildTrend();
+
+function agentView(view) {
+  const card = document.getElementById('agent-card');
+  if (!card) return;
+  card.querySelectorAll('.agent-toggle').forEach(b => {
+    if (b.dataset.agentView) b.classList.toggle('active', b.dataset.agentView === view);
+  });
+  card.querySelectorAll('[data-agent-pane]').forEach(p => {
+    p.style.display = p.dataset.agentPane === view ? '' : 'none';
+  });
+}
+
+function proactiveView(view) {
+  const card = document.getElementById('proactive-card');
+  if (!card) return;
+  card.querySelectorAll('.agent-toggle').forEach(b => {
+    if (b.dataset.proView) b.classList.toggle('active', b.dataset.proView === view);
+  });
+  card.querySelectorAll('[data-pro-pane]').forEach(p => {
+    p.style.display = p.dataset.proPane === view ? '' : 'none';
+  });
+}
+
+function getCurrentFilter() {
+  const a = document.querySelector('.filter-btn.active');
+  return a ? a.dataset.filter : 'fts';
+}
+
+function renderAgedDetail(threshold, filter) {
+  const detail = document.getElementById('detail-aged-' + threshold);
+  if (!detail) return;
+  let tickets = DATA.agedTickets.filter(t => t.age > threshold);
+  if (filter === 'fts')      tickets = tickets.filter(t => FTS_BUS.includes(t.bu));
+  else if (filter !== 'all') tickets = tickets.filter(t => t.bu === filter);
+  if (tickets.length === 0) {
+    detail.innerHTML = '<p style="color:var(--grey-text);margin:0;font-size:12px;font-style:italic">No tickets in this bucket for current filter.</p>';
+    return;
+  }
+  let html = '<div style="display:flex;font-size:10px;font-weight:700;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px;padding:0 0 4px 0;border-bottom:1px solid var(--grey-border)">';
+  html += '<span style="min-width:65px">Ticket #</span><span style="flex:1">Subject</span><span style="min-width:55px;text-align:center">BU</span><span style="min-width:55px;text-align:right">Age</span><span style="min-width:65px;text-align:right">Status</span></div>';
+  tickets.forEach(t => {
+    const ageColor = t.age > 30 ? 'var(--bad)' : 'var(--warn)';
+    html += '<div style="display:flex;align-items:center;padding:6px 0;border-bottom:1px solid #eee;font-size:12px">';
+    html += '<span style="min-width:65px;font-weight:700;color:var(--cyan)">#' + t.id + '</span>';
+    html += '<span style="flex:1;color:var(--navy)">' + t.subject + '</span>';
+    html += '<span style="min-width:55px;text-align:center"><span class="badge b-fts" style="font-size:10px">' + t.bu + '</span></span>';
+    html += '<span style="min-width:55px;text-align:right;font-weight:700;color:' + ageColor + '">' + t.age + 'd</span>';
+    html += '<span style="min-width:65px;text-align:right;color:var(--grey-text);text-transform:capitalize">' + t.status + '</span>';
+    html += '</div>';
+  });
+  detail.innerHTML = html;
+}
+
+function toggleAged(threshold) {
+  const detail = document.getElementById('detail-aged-' + threshold);
+  const caret  = document.getElementById('caret-aged-' + threshold);
+  if (!detail) return;
+  const isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : '';
+  if (caret) caret.innerHTML = isOpen ? '&#9662;' : '&#9652;';
+  if (!isOpen) renderAgedDetail(threshold, getCurrentFilter());
+}
+
+applyFilter('fts');
+</script>
+</body>
+</html>
