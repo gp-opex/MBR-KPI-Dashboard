@@ -1,0 +1,31 @@
+{
+  "name": "mbr-kpi-dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3003",
+    "build": "next build",
+    "start": "next start -p 3003"
+  },
+  "dependencies": {
+    "@types/node": "25.6.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "autoprefixer": "10.4.27",
+    "chart.js": "4.5.1",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.3",
+    "mssql": "^12.2.1",
+    "next": "^16.2.4",
+    "postcss": "8.5.9",
+    "react": "19.2.4",
+    "react-chartjs-2": "5.3.1",
+    "react-dom": "19.2.4",
+    "tailwindcss": "4.2.2",
+    "typescript": "6.0.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
+    "@types/mssql": "^9.1.11"
+  }
+}

@@ -40,6 +40,8 @@
   .filter-btn.active { background: var(--navy); color: #fff; }
   .filter-btn.fts { border-color: var(--cyan); color: var(--cyan); }
   .filter-btn.fts.active { background: var(--cyan); color: #fff; border-color: var(--cyan); }
+  .calls-tab { font-size: 11px; padding: 3px 10px; border: 1.5px solid var(--cyan); border-radius: 14px; background: transparent; color: var(--cyan); font-weight: 500; cursor: pointer; user-select: none; }
+  .calls-tab.active { background: var(--cyan); color: #fff; }
   .section-label { font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--navy); margin: 0 0 8px; padding-left: 2px; }
   .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 16px; }
   .kpi { background: var(--navy); border-radius: var(--radius-md); padding: 0.85rem 1rem; }
@@ -119,9 +121,7 @@
         <span class="header-badge">v1.5 &mdash; WO strip + aged drilldown</span>
       </div>
 
-      <div style="background:var(--warn-bg);border-left:4px solid var(--warn);padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;color:var(--warn-fg)">
-        <strong>Data is stale.</strong> Latest ticket in opex-db created <strong>16 March 2026</strong>; last sync ~<strong>11 April 2026</strong>. Tickets created in the last ~7&ndash;30 days are not yet in the database.
-      </div>
+      <div id="data-status-banner" style="margin-bottom:14px"></div>
 
       <div class="filter-section">
         <p class="filter-group-label">Follow the Sun &mdash; 24/7 support desk</p>
@@ -146,7 +146,7 @@
       <p class="section-label" id="view-label">KPI Summary &mdash; Follow the Sun</p>
       <div class="kpi-grid">
         <div class="kpi"><p class="kpi-label">Calls answered</p><p class="kpi-val" id="kpi-calls">&mdash;</p><p class="kpi-sub" id="kpi-calls-sub">FTS only &middot; Target: 100%</p></div>
-        <div class="kpi"><p class="kpi-label">First reply time</p><p class="kpi-val" id="kpi-reply">&mdash;</p><p class="kpi-sub" id="kpi-reply-sub">Target: under 100min</p></div>
+        <div class="kpi"><p class="kpi-label">First reply time</p><p class="kpi-val" id="kpi-reply">&mdash;</p><p class="kpi-sub" id="kpi-reply-sub">All BUs &middot; Target: under 100min</p></div>
         <div class="kpi"><p class="kpi-label">Tickets &gt;7 days</p><p class="kpi-val" id="kpi-aged-7">&mdash;</p><p class="kpi-sub" id="kpi-aged-7-sub">Max allowed: 8</p></div>
         <div class="kpi"><p class="kpi-label">Tickets &gt;30 days</p><p class="kpi-val" id="kpi-aged-30">&mdash;</p><p class="kpi-sub" id="kpi-aged-30-sub">Max allowed: 2</p></div>
         <div class="kpi"><p class="kpi-label">Tickets closed</p><p class="kpi-val" id="kpi-closed">&mdash;</p><p class="kpi-sub kpi-good" id="kpi-closed-sub">Last full month</p></div>
@@ -157,10 +157,24 @@
         <div class="card" id="calls-card">
           <div class="accent-bar"></div>
           <p class="card-title">Calls Answered <span class="badge b-fts">Follow the Sun only</span></p>
+          <div id="calls-period-tabs" style="margin:0 0 10px;display:flex;gap:6px">
+            <span class="calls-tab" data-calls-period="7">Last 7 days</span>
+            <span class="calls-tab active" data-calls-period="30">Last 30 days</span>
+          </div>
           <div id="calls-rows"></div>
           <div id="calls-na" style="display:none">
             <p style="font-size:12px;color:var(--grey-text);margin:0">Call tracking applies to Follow the Sun BUs only &mdash; GPAU, GPSA, GPNA</p>
           </div>
+        </div>
+        <div class="card">
+          <div class="accent-bar"></div>
+          <p class="card-title">First Reply Time by BU <span class="badge b-fts">Follow the Sun</span></p>
+          <p style="font-size:12px;color:var(--grey-text);margin:0 0 8px">Avg first reply, last full month (Feb 2026). Target: under 100 min.</p>
+          <div class="row"><div class="dot dr"></div><span class="row-label">GPAU</span><span class="row-meta" style="color:var(--bad);font-weight:700">427min &mdash; over target</span></div>
+          <div class="row"><div class="dot dr"></div><span class="row-label">GPSA</span><span class="row-meta" style="color:var(--bad);font-weight:700">756min &mdash; over target</span></div>
+          <div class="row"><div class="dot dr"></div><span class="row-label">GPNA</span><span class="row-meta" style="color:var(--bad);font-weight:700">220min &mdash; over target</span></div>
+          <div class="divider"></div>
+          <p style="font-size:11px;color:var(--grey-text);margin:0;font-style:italic">Calendar hours (incl. weekends/overnight). Business-hours metric pending Zendesk Pro.</p>
         </div>
         <div class="card">
           <div class="accent-bar"></div>
@@ -570,13 +584,24 @@ const FTS_BUS = ['GPAU','GPSA','GPNA'];
 
 const DATA = {
   buildDate: "2026-05-06",
+  lastDataUpdate: "2026-05-06T04:34:00Z",  // ISO UTC of latest opex-db sup.Tickets row
   calls: {
-    overall: { acceptedPct: 83.7, total: 98, accepted: 82, missed: 16 },
-    byBU: [
-      { bu: "GPAU", pct: 93.6, total: 31, missed: 2,  status: "bad" },
-      { bu: "GPSA", pct: 90.6, total: 23, missed: 2,  status: "bad" },
-      { bu: "GPNA", pct: 78.0, total: 44, missed: 12, status: "bad" }
-    ]
+    last7: {
+      overall: { acceptedPct: 90.0, total: 10, accepted: 9, missed: 1 },
+      byBU: [
+        { bu: "GPAU", pct: 100,  total: 4, missed: 0, status: "good" },
+        { bu: "GPSA", pct: 100,  total: 3, missed: 0, status: "good" },
+        { bu: "GPNA", pct: 66.7, total: 3, missed: 1, status: "bad"  }
+      ]
+    },
+    last30: {
+      overall: { acceptedPct: 83.7, total: 98, accepted: 82, missed: 16 },
+      byBU: [
+        { bu: "GPAU", pct: 93.5, total: 31, missed: 2,  status: "bad" },
+        { bu: "GPSA", pct: 91.3, total: 23, missed: 2,  status: "bad" },
+        { bu: "GPNA", pct: 72.7, total: 44, missed: 12, status: "bad" }
+      ]
+    }
   },
   firstReply: { minutes: 223, targetMinutes: 100 },
   aged: {
@@ -614,6 +639,36 @@ const DATA = {
 document.getElementById('hdr-date').textContent      = "Snapshot: " + DATA.buildDate;
 document.getElementById('snapshot-date').textContent = DATA.buildDate;
 
+(function renderDataStatus() {
+  var banner = document.getElementById('data-status-banner');
+  if (!banner || !DATA.lastDataUpdate) return;
+  var last = new Date(DATA.lastDataUpdate);
+  var now  = new Date();
+  var hours = (now - last) / (1000 * 60 * 60);
+  var lastStr = last.toLocaleString('en-AU', {
+    timeZone: 'Australia/Brisbane',
+    year: 'numeric', month: 'short', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }) + ' BNE';
+  var stale = hours >= 12;
+  var bg, brd, fg, msg;
+  if (stale) {
+    bg  = 'var(--warn-bg)';
+    brd = 'var(--warn)';
+    fg  = 'var(--warn-fg)';
+    msg = '<strong>No update for ' + Math.floor(hours) + ' hours.</strong> Last sync: ' + lastStr;
+  } else {
+    var rounded = Math.round(hours * 10) / 10;
+    bg  = 'var(--good-bg)';
+    brd = 'var(--good)';
+    fg  = 'var(--good-fg)';
+    msg = '<strong>Data last updated:</strong> ' + lastStr + ' (' + rounded + ' hours ago)';
+  }
+  banner.style.cssText = 'background:' + bg + ';border-left:4px solid ' + brd +
+    ';padding:10px 14px;border-radius:6px;font-size:12px;color:' + fg + ';';
+  banner.innerHTML = msg;
+})();
+
 document.querySelectorAll('nav.tabs button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
@@ -623,18 +678,41 @@ document.querySelectorAll('nav.tabs button').forEach(btn => {
   });
 });
 
-const callsRows = document.getElementById('calls-rows');
-DATA.calls.byBU.forEach(c => {
-  const dotClass = c.status === 'good' ? 'dg' : (c.status === 'warn' ? 'da' : 'dr');
-  const detail = c.missed > 0
-    ? '<span class="row-meta" style="color:var(--bad)">' + c.pct + '% — ' + c.missed + ' missed (' + c.total + ' total)</span>'
-    : '<span class="row-meta">' + c.pct + '% (' + c.total + ' calls)</span>';
-  const div = document.createElement('div');
-  div.className = 'row';
-  div.dataset.bu = c.bu + ',fts';
-  div.innerHTML = '<div class="dot ' + dotClass + '"></div><span class="row-label">' + c.bu + '</span>' + detail;
-  callsRows.appendChild(div);
+let activeCallsPeriod = '30';  // default tab
+
+function renderCallsRows() {
+  const callsRows = document.getElementById('calls-rows');
+  if (!callsRows) return;
+  callsRows.innerHTML = '';
+  const data = DATA.calls['last' + activeCallsPeriod];
+  if (!data) return;
+  data.byBU.forEach(c => {
+    const dotClass = c.status === 'good' ? 'dg' : (c.status === 'warn' ? 'da' : 'dr');
+    const detail = c.missed > 0
+      ? '<span class="row-meta" style="color:var(--bad)">' + c.pct + '% — ' + c.missed + ' missed (' + c.total + ' total)</span>'
+      : '<span class="row-meta">' + c.pct + '% (' + c.total + ' calls)</span>';
+    const div = document.createElement('div');
+    div.className = 'row';
+    div.dataset.bu = c.bu + ',fts';
+    div.innerHTML = '<div class="dot ' + dotClass + '"></div><span class="row-label">' + c.bu + '</span>' + detail;
+    callsRows.appendChild(div);
+  });
+}
+
+document.querySelectorAll('.calls-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.calls-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCallsPeriod = btn.dataset.callsPeriod;
+    renderCallsRows();
+    // Re-apply current BU filter so row visibility stays correct
+    const activeFilterBtn = document.querySelector('.filter-btn.active');
+    const currentFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'fts';
+    applyFilter(currentFilter);
+  });
 });
+
+renderCallsRows();
 
 function setKpi(id, val, subId, subText, subClass) {
   document.getElementById(id).textContent = val;
@@ -660,16 +738,18 @@ function kpiClass(val, target, lowerIsBetter) {
 function renderKpis(filter) {
   const isFts = (filter === 'fts');
   const isBuFts = FTS_BUS.includes(filter);
+  const callsData = DATA.calls['last' + activeCallsPeriod];  // active 7d / 30d window
+  const periodLbl = 'last ' + activeCallsPeriod + 'd';
   let callPct, callsLabel;
   if (filter === 'all') {
     callPct = '—'; callsLabel = "FTS only · not applicable";
   } else if (isFts) {
-    callPct = DATA.calls.overall.acceptedPct.toFixed(1) + '%';
-    callsLabel = "Target: 100% · " + DATA.calls.overall.total + " calls";
+    callPct = callsData.overall.acceptedPct.toFixed(1) + '%';
+    callsLabel = "Target: 100% · " + callsData.overall.total + " calls (" + periodLbl + ")";
   } else if (isBuFts) {
-    const c = DATA.calls.byBU.find(x => x.bu === filter);
+    const c = callsData.byBU.find(x => x.bu === filter);
     callPct = c ? c.pct.toFixed(0) + '%' : '—';
-    callsLabel = c ? "Target: 100% · " + c.total + " calls" : "—";
+    callsLabel = c ? "Target: 100% · " + c.total + " calls (" + periodLbl + ")" : "—";
   } else {
     callPct = '—'; callsLabel = "FTS only · not applicable";
   }
@@ -808,6 +888,45 @@ function renderAgedDetail(threshold, filter) {
     html += '<span style="min-width:55px;text-align:center"><span class="badge b-fts" style="font-size:10px">' + t.bu + '</span></span>';
     html += '<span style="min-width:55px;text-align:right;font-weight:700;color:' + ageColor + '">' + t.age + 'd</span>';
     html += '<span style="min-width:65px;text-align:right;color:var(--grey-text);text-transform:capitalize">' + t.status + '</span>';
+    html += '</div>';
+  });
+  detail.innerHTML = html;
+}
+
+function toggleAged(threshold) {
+  const detail = document.getElementById('detail-aged-' + threshold);
+  const caret  = document.getElementById('caret-aged-' + threshold);
+  if (!detail) return;
+  const isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : '';
+  if (caret) caret.innerHTML = isOpen ? '&#9662;' : '&#9652;';
+  if (!isOpen) renderAgedDetail(threshold, getCurrentFilter());
+}
+
+applyFilter('fts');
+</script>
+</body>
+</html>
+    html += '</div>';
+  });
+  detail.innerHTML = html;
+}
+
+function toggleAged(threshold) {
+  const detail = document.getElementById('detail-aged-' + threshold);
+  const caret  = document.getElementById('caret-aged-' + threshold);
+  if (!detail) return;
+  const isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : '';
+  if (caret) caret.innerHTML = isOpen ? '&#9662;' : '&#9652;';
+  if (!isOpen) renderAgedDetail(threshold, getCurrentFilter());
+}
+
+applyFilter('fts');
+</script>
+</body>
+</html>
+xt-align:right;color:var(--grey-text);text-transform:capitalize">' + t.status + '</span>';
     html += '</div>';
   });
   detail.innerHTML = html;
