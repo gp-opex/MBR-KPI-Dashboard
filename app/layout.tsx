@@ -8,8 +8,8 @@ const sourceSans = Source_Sans_3({
 })
 
 export const metadata = {
-  title: 'OPEX MBR & KPI Dashboard | GroundProbe',
-  description: 'Support Operations — QMS Reliability & Support',
+  title: 'GroundProbe — Support Operations',
+  description: 'GroundProbe Support Operations Dashboard',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

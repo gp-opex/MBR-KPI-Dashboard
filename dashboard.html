@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GroundProbe — Support Operations | OPEX MBR & KPI</title>
+<title>GroundProbe — Support Operations</title>
 <style>
   :root {
     --navy: #003366; --cyan: #0099CC; --navy-text-soft: #b3d4f0;
@@ -103,12 +103,11 @@
 </head>
 <body>
 <header class="app-header">
-  <h1>OPEX MBR &amp; KPI Dashboard</h1>
-  <div class="meta"><div>QMS &mdash; Reliability &amp; Support</div><div id="hdr-date"></div></div>
+  <h1>GroundProbe &mdash; Support Operations</h1>
+  <div class="meta"><div id="hdr-date"></div></div>
 </header>
 <nav class="tabs" id="tabs">
   <button class="active" data-tab="zendesk">Support Operations<span class="badge">LIVE</span></button>
-  <button class="placeholder" data-tab="about">About</button>
 </nav>
 <main>
   <section id="tab-zendesk" class="tab-content active">
@@ -118,7 +117,6 @@
           <p class="header-title">GroundProbe &mdash; Support Operations</p>
           <p class="header-sub">Support &amp; proactive monitoring &middot; Snapshot <span id="snapshot-date"></span></p>
         </div>
-        <span class="header-badge">v1.5 &mdash; WO strip + aged drilldown</span>
       </div>
 
       <div id="data-status-banner" style="margin-bottom:14px"></div>
@@ -143,7 +141,7 @@
         </div>
       </div>
 
-      <p class="section-label" id="view-label">KPI Summary &mdash; Follow the Sun</p>
+      <p class="section-label" id="view-label">Summary &mdash; Follow the Sun</p>
       <div class="kpi-grid">
         <div class="kpi"><p class="kpi-label">Calls answered</p><p class="kpi-val" id="kpi-calls">&mdash;</p><p class="kpi-sub" id="kpi-calls-sub">FTS only &middot; Target: 100%</p></div>
         <div class="kpi"><p class="kpi-label">First reply time</p><p class="kpi-val" id="kpi-reply">&mdash;</p><p class="kpi-sub" id="kpi-reply-sub">All BUs &middot; Target: under 100min</p></div>
@@ -201,266 +199,29 @@
           <div class="divider"></div>
           <p style="font-size:12px;color:var(--grey-text);margin:0">Tickets opened per ISO week across all BUs</p>
         </div>
-        <div class="card">
+        <div class="card" id="mr-card">
           <div class="accent-bar"></div>
-          <p class="card-title">Time to First WO Creation <span class="badge b-warn">Placeholder &middot; D365 link pending</span></p>
+          <p class="card-title">Tickets vs Maintenance Requests <span class="badge b-warn">Placeholder &middot; D365 pending</span></p>
+          <div id="mr-period-tabs" style="margin:0 0 10px;display:flex;gap:6px">
+            <span class="calls-tab" data-mr-period="7">Last 7 days</span>
+            <span class="calls-tab active" data-mr-period="30">Last 30 days</span>
+          </div>
           <div class="kpi-grid" style="margin-bottom:10px">
-            <div class="kpi"><p class="kpi-label">Avg time to WO</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">Pending</p></div>
-            <div class="kpi"><p class="kpi-label">Fastest</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">&mdash;</p></div>
-            <div class="kpi"><p class="kpi-label">Slowest</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">&mdash;</p></div>
+            <div class="kpi"><p class="kpi-label">Tickets Created</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted" id="mr-tickets-sub">Zendesk &middot; last 30d</p></div>
+            <div class="kpi"><p class="kpi-label">MRs Raised</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted" id="mr-raised-sub">D365 &middot; last 30d</p></div>
+            <div class="kpi"><p class="kpi-label">MR Coverage</p><p class="kpi-val">&mdash;</p><p class="kpi-sub kpi-muted">% tickets &rarr; MR</p></div>
           </div>
           <div class="divider"></div>
-          <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy);margin:0 0 6px">Avg WO creation time per BU</p>
-          <div id="wo-tiles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:4px">
-            <div class="wo-tile"><div class="wo-tile-bu fts">GPAU</div><div class="wo-tile-val">&mdash;</div></div>
-            <div class="wo-tile"><div class="wo-tile-bu fts">GPSA</div><div class="wo-tile-val">&mdash;</div></div>
-            <div class="wo-tile"><div class="wo-tile-bu fts">GPNA</div><div class="wo-tile-val">&mdash;</div></div>
-            <div class="wo-tile"><div class="wo-tile-bu gen">GPPT</div><div class="wo-tile-val">&mdash;</div></div>
-            <div class="wo-tile"><div class="wo-tile-bu gen">GPID</div><div class="wo-tile-val">&mdash;</div></div>
-            <div class="wo-tile"><div class="wo-tile-bu gen">GPCN</div><div class="wo-tile-val">&mdash;</div></div>
-            <div class="wo-tile"><div class="wo-tile-bu gen">GPPE</div><div class="wo-tile-val">&mdash;</div></div>
-            <div class="wo-tile"><div class="wo-tile-bu gen">GPCL</div><div class="wo-tile-val">&mdash;</div></div>
-            <div class="wo-tile"><div class="wo-tile-bu gen">GPBR</div><div class="wo-tile-val">&mdash;</div></div>
-          </div>
+          <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy);margin:0 0 6px">MRs raised by Agent</p>
+          <div class="row"><span class="row-label">Agent name</span><span class="row-meta">&mdash; MRs raised</span></div>
+          <div class="row"><span class="row-label">Agent name</span><span class="row-meta">&mdash; MRs raised</span></div>
+          <div class="row"><span class="row-label">Agent name</span><span class="row-meta">&mdash; MRs raised</span></div>
           <div class="divider"></div>
-          <p style="font-size:11px;color:var(--grey-text);margin:0 0 8px"><strong style="color:var(--navy)">Note:</strong> This data is only for WOs created via Zendesk and assigned to a ticket. WOs raised directly in D365 are not counted here.</p>
+          <p style="font-size:11px;color:var(--grey-text);margin:0 0 8px">Tracks whether incoming tickets are resolved within Zendesk or require a Maintenance Request in D365 for business unit intervention.</p>
           <a href="#" onclick="alert('D365 dashboard link to be configured'); return false;" style="display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--cyan);padding:6px 14px;border-radius:20px;text-decoration:none">Open D365 Dashboard &rarr;</a>
-          <p style="font-size:11px;color:var(--grey-text);margin:6px 0 0;font-style:italic">All BUs included &middot; values populate once D365 link is wired</p>
         </div>
       </div>
 
-      <div class="two-col">
-        <div class="card" id="proactive-card">
-          <div class="accent-bar"></div>
-          <p class="card-title">
-            Proactive Alerts &mdash; Web-Upload
-            <span class="badge b-warn">WIP &middot; DB fix pending</span>
-            <span style="display:flex;gap:4px;margin-left:auto">
-              <button type="button" class="agent-toggle active" data-pro-view="7days" onclick="proactiveView('7days')">7 days</button>
-              <button type="button" class="agent-toggle" data-pro-view="30days" onclick="proactiveView('30days')">30 days</button>
-            </span>
-          </p>
-
-          <div data-pro-pane="7days">
-            <div class="kpi-grid" style="margin-bottom:10px">
-              <div class="kpi"><p class="kpi-label">Systems using webupload</p><p class="kpi-val">106</p><p class="kpi-sub kpi-good">Active uploaders, 7 days</p></div>
-              <div class="kpi"><p class="kpi-label">Alerts triggered by webupload</p><p class="kpi-val">2,153</p><p class="kpi-sub kpi-warn">No-upload alerts, 7 days</p></div>
-            </div>
-            <div class="divider"></div>            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy);margin:0 0 6px">Webupload activity per BU (7 days) &mdash; <span style="color:var(--grey-text);font-weight:500;text-transform:none">systems active &middot; alarms triggered</span></p>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:4px">
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPAU</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">30</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">351</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPSA</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">30</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">444</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPNA</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">17</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">337</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPPT</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">13</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">245</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPID</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">4</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">41</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPCN</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">0</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">36</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPPE</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">2</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">85</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPCL</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">4</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">284</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPBR</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">6</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">297</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div data-pro-pane="30days" style="display:none">
-            <div class="kpi-grid" style="margin-bottom:10px">
-              <div class="kpi"><p class="kpi-label">Systems using webupload</p><p class="kpi-val">106</p><p class="kpi-sub kpi-good">Active uploaders, 30 days</p></div>
-              <div class="kpi"><p class="kpi-label">Alerts triggered by webupload</p><p class="kpi-val">2,153</p><p class="kpi-sub kpi-warn">No-upload alerts, 30 days</p></div>
-            </div>
-            <div class="divider"></div>            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy);margin:0 0 6px">Webupload activity per BU (30 days) &mdash; <span style="color:var(--grey-text);font-weight:500;text-transform:none">systems active &middot; alarms triggered</span></p>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:4px">
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPAU</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">30</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">351</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPSA</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">30</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">444</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu fts" style="margin-bottom:4px">GPNA</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">17</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">337</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPPT</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">13</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">245</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPID</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">4</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">41</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPCN</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">0</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">36</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPPE</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">2</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">85</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPCL</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">4</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">284</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-              <div class="wo-tile" style="padding:6px 4px">
-                <div class="wo-tile-bu gen" style="margin-bottom:4px">GPBR</div>
-                <div style="border-top:1px solid var(--grey-border);padding-top:4px">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy)">6</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">systems</div>
-                </div>
-                <div style="margin-top:3px">
-                  <div style="font-size:14px;font-weight:700;color:var(--bad)">297</div>
-                  <div style="font-size:9px;color:var(--grey-text);text-transform:uppercase;letter-spacing:0.5px">alarms</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <p style="font-size:11px;color:var(--grey-text);margin:6px 0 0;font-style:italic">Sources: <code>logs.ProcessedFiles</code> + <code>proactive.DailyFailureSummary</code> &middot; data ~28 days behind &middot; 7-day and 30-day match because only 3 days of data are loaded</p>
-        </div>
         <div class="card">
           <div class="accent-bar"></div>
           <p class="card-title">System Status <span class="badge b-warn">Placeholder &middot; Zendesk filter WIP</span></p>
@@ -570,13 +331,9 @@
         </p>
       </div>
 
-      <p class="footer-text">Sources: Zendesk (live) &middot; D365 (pending) &middot; proactive.* (pending) &middot; L3/L4 pending Zendesk config.</p>
     </div>
   </section>
 
-  <section id="tab-about" class="tab-content">
-    <div class="placeholder-content"><div class="icon">&#128202;</div><h2>About this dashboard</h2><p>QMS section of the OPEX MBR &amp; KPI dashboard.</p><ul><li><strong>Owner:</strong> QMS &mdash; Reliability &amp; Support team</li><li><strong>Layout:</strong> v9 &mdash; Follow-the-Sun + All BUs filter</li><li><strong>Data source:</strong> OPEX SQL database (<code>sup</code>, <code>proactive</code>, <code>eam</code>)</li><li><strong>Refresh:</strong> Snapshot &mdash; re-run queries in <code>CLAUDE.md</code></li></ul></div>
-  </section>
 </main>
 
 <script>
@@ -699,9 +456,9 @@ function renderCallsRows() {
   });
 }
 
-document.querySelectorAll('.calls-tab').forEach(btn => {
+document.querySelectorAll('[data-calls-period]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.calls-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[data-calls-period]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     activeCallsPeriod = btn.dataset.callsPeriod;
     renderCallsRows();
@@ -786,8 +543,8 @@ function renderKpis(filter) {
 
 function applyFilter(filter) {
   const isFts = filter === 'fts' || FTS_BUS.includes(filter);
-  const label = filter === 'fts' ? 'KPI Summary — Follow the Sun'
-              : (filter === 'all' ? 'KPI Summary — All BUs' : 'KPI Summary — ' + filter);
+  const label = filter === 'fts' ? 'Summary — Follow the Sun'
+              : (filter === 'all' ? 'Summary — All BUs' : 'Summary — ' + filter);
   document.getElementById('view-label').textContent = label;
   ['calls-rows','sys-rows'].forEach(id => {
     const c = document.getElementById(id);
@@ -852,16 +609,19 @@ function agentView(view) {
   });
 }
 
-function proactiveView(view) {
-  const card = document.getElementById('proactive-card');
-  if (!card) return;
-  card.querySelectorAll('.agent-toggle').forEach(b => {
-    if (b.dataset.proView) b.classList.toggle('active', b.dataset.proView === view);
+let activeMrPeriod = '30';
+
+document.querySelectorAll('[data-mr-period]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-mr-period]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeMrPeriod = btn.dataset.mrPeriod;
+    const sub = document.getElementById('mr-tickets-sub');
+    const sub2 = document.getElementById('mr-raised-sub');
+    if (sub)  sub.textContent  = 'Zendesk · last ' + activeMrPeriod + 'd';
+    if (sub2) sub2.textContent = 'D365 · last ' + activeMrPeriod + 'd';
   });
-  card.querySelectorAll('[data-pro-pane]').forEach(p => {
-    p.style.display = p.dataset.proPane === view ? '' : 'none';
-  });
-}
+});
 
 function getCurrentFilter() {
   const a = document.querySelector('.filter-btn.active');
@@ -888,25 +648,6 @@ function renderAgedDetail(threshold, filter) {
     html += '<span style="min-width:55px;text-align:center"><span class="badge b-fts" style="font-size:10px">' + t.bu + '</span></span>';
     html += '<span style="min-width:55px;text-align:right;font-weight:700;color:' + ageColor + '">' + t.age + 'd</span>';
     html += '<span style="min-width:65px;text-align:right;color:var(--grey-text);text-transform:capitalize">' + t.status + '</span>';
-    html += '</div>';
-  });
-  detail.innerHTML = html;
-}
-
-function toggleAged(threshold) {
-  const detail = document.getElementById('detail-aged-' + threshold);
-  const caret  = document.getElementById('caret-aged-' + threshold);
-  if (!detail) return;
-  const isOpen = detail.style.display !== 'none';
-  detail.style.display = isOpen ? 'none' : '';
-  if (caret) caret.innerHTML = isOpen ? '&#9662;' : '&#9652;';
-  if (!isOpen) renderAgedDetail(threshold, getCurrentFilter());
-}
-
-applyFilter('fts');
-</script>
-</body>
-</html>
     html += '</div>';
   });
   detail.innerHTML = html;

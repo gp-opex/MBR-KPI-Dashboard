@@ -113,6 +113,7 @@ export default function DashboardClient() {
   // State
   const [filter, setFilter] = useState<Filter>('fts')
   const [callsPeriod, setCallsPeriod] = useState<'7' | '30'>('30')
+  const [mrPeriod, setMrPeriod] = useState<'7' | '30'>('30')
   const [agedOpen7, setAgedOpen7] = useState(false)
   const [agedOpen30, setAgedOpen30] = useState(false)
   const [calls, setCalls] = useState<CallsApiResponse | null>(null)
@@ -194,14 +195,14 @@ export default function DashboardClient() {
   const hoursAgo = lastUpdate ? (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60) : null
   const isStale = hoursAgo !== null && hoursAgo >= 12
 
-  const viewLabel = filter === 'fts' ? 'KPI Summary — Follow the Sun'
-    : filter === 'all' ? 'KPI Summary — All BUs'
-    : `KPI Summary — ${filter}`
+  const viewLabel = filter === 'fts' ? 'Summary — Follow the Sun'
+    : filter === 'all' ? 'Summary — All BUs'
+    : `Summary — ${filter}`
 
   // ── Render ──
   return (
     <div style={{ background: T.pageBg, minHeight: '100vh', transition: 'background 0.25s' }}>
-      <SiteHeader title="OPEX MBR & KPI Dashboard" subtitle="QMS — Reliability & Support" />
+      <SiteHeader title="GroundProbe — Support Operations" />
 
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '20px 24px 40px' }}>
 
@@ -401,7 +402,42 @@ export default function DashboardClient() {
             <p style={{ fontSize: '12px', color: T.textSec, margin: 0 }}>Tickets opened per ISO week across all BUs</p>
           </div>
 
-          {placeholderCard(T, 'Time to First WO Creation', 'Placeholder · D365 link pending')}
+          {/* Tickets vs Maintenance Requests card */}
+          <div style={card(T)}>
+            <div style={accentBar} />
+            <p style={{ fontSize: '14px', fontWeight: 700, color: T.text, margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' as const }}>
+              Tickets vs Maintenance Requests
+              <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 9px', borderRadius: '20px', background: '#f59e0b', color: '#fff' }}>Placeholder · D365 pending</span>
+            </p>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+              {(['7', '30'] as const).map(p => (
+                <button key={p} onClick={() => setMrPeriod(p)} style={{ fontSize: '11px', padding: '3px 10px', border: `1.5px solid ${B.cyan}`, borderRadius: '14px', background: mrPeriod === p ? B.cyan : 'transparent', color: mrPeriod === p ? '#fff' : B.cyan, fontWeight: 500, cursor: 'pointer' }}>
+                  Last {p} days
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '10px' }}>
+              {kpiCard('—', 'Tickets Created', `Zendesk · last ${mrPeriod}d`, '#b3d4f0')}
+              {kpiCard('—', 'MRs Raised', `D365 · last ${mrPeriod}d`, '#b3d4f0')}
+              {kpiCard('—', 'MR Coverage', '% tickets → MR', '#b3d4f0')}
+            </div>
+            {divider(T)}
+            <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.5px', color: T.text, margin: '0 0 6px' }}>MRs raised by Agent</p>
+            {['Agent name', 'Agent name', 'Agent name'].map((name, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0', borderBottom: `1px solid ${T.rowBorder}`, fontSize: '12px' }}>
+                <span style={{ flex: 1, fontWeight: 700, color: T.text }}>{name}</span>
+                <span style={{ color: T.textSec }}>— MRs raised</span>
+              </div>
+            ))}
+            {divider(T)}
+            <p style={{ fontSize: '11px', color: T.textSec, margin: '0 0 8px' }}>
+              Tracks whether incoming tickets are resolved within Zendesk or require a Maintenance Request in D365 for business unit intervention.
+            </p>
+            <a href="#" onClick={(e) => { e.preventDefault(); alert('D365 dashboard link to be configured') }}
+              style={{ display: 'inline-block', fontSize: '12px', fontWeight: 700, color: '#fff', background: B.cyan, padding: '6px 14px', borderRadius: '20px', textDecoration: 'none' }}>
+              Open D365 Dashboard →
+            </a>
+          </div>
 
         </div>
 
@@ -417,16 +453,6 @@ export default function DashboardClient() {
           {placeholderCard(T, 'Agent Quality Metric', 'Placeholder · Zendesk Pro pending')}
         </div>
 
-        {/* Footer */}
-        <p style={{ fontSize: '11px', color: T.textDim, margin: '14px 0 0', paddingTop: '10px', borderTop: `1px solid ${T.divider}` }}>
-          Sources: Zendesk via <code>sup.*</code> (live) · D365 (pending) · L3/L4 pending Zendesk config.
-          {lastUpdate && (
-            <> · {isStale
-              ? <>No update for {Math.floor(hoursAgo!)} hours. Last sync: {lastUpdate.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })} BNE</>
-              : <>Last sync: {lastUpdate.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })} BNE ({Math.round((hoursAgo || 0) * 10) / 10}h ago)</>
-            }</>
-          )}
-        </p>
 
       </main>
     </div>
